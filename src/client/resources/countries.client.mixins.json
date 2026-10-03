@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "package": "com.fixpot47.countries.mixin.client",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "ChatComponentMixin",
+    "MinecraftMixin",
+    "PlayerTabOverlayMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}
