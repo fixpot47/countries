@@ -3,6 +3,7 @@
   "package": "com.fixpot47.countries.mixin.client",
   "compatibilityLevel": "JAVA_25",
   "client": [
+    "ClientPacketListenerMixin",
     "ChatComponentMixin",
     "MinecraftMixin",
     "PlayerTabOverlayMixin"
