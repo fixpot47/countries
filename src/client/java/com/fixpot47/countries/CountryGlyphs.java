@@ -15,6 +15,12 @@ ad ae af ag ai al am ao aq ar as at au aw ax az ba bb bd be bf bg bh bi bj bl bm
         for (int i = 0; i < CODES.length; i++) {
             GLYPHS.put(CODES[i], String.valueOf((char) (0xE000 + i)));
         }
+
+        GLYPHS.put("xab", String.valueOf((char) 0xE100));
+        GLYPHS.put("xnc", String.valueOf((char) 0xE101));
+        GLYPHS.put("xsl", String.valueOf((char) 0xE102));
+        GLYPHS.put("xso", String.valueOf((char) 0xE103));
+        GLYPHS.put("xtrn", String.valueOf((char) 0xE104));
     }
 
     private CountryGlyphs() {
