@@ -1,6 +1,12 @@
 # Countries
 
-Client-side Fabric mod for Minecraft 26.3 that adds a small country flag to the right of player names in TAB.
+Client-side Fabric mod for Minecraft 26.3.
+
+Countries adds a small rectangular bitmap country flag directly to the **right of a player's world nametag above their head**.
+
+It does **not** add the flag to TAB.
+
+The flags are Minecraft bitmap-font textures (12×9 px), not Apple/Android emoji.
 
 ## In-game command
 
@@ -30,9 +36,7 @@ config/countries.json
 
 ## Country names
 
-Human-readable names are supported. Two-letter codes are not required.
-
-Examples include:
+Human-readable names are supported. Examples:
 
 - `Turkey`, `Turkiye`, `Türkiye`
 - `Germany`, `Deutschland`, `Duetchland`, `Deutchland`
@@ -40,35 +44,29 @@ Examples include:
 - `Russia`
 - `Serbia`
 - `United Kingdom`, `UK`
-- and standard country names in English, Turkish, German, and Russian
+- standard country names in English, Turkish, German, and Russian
 
-The JSON files also store readable names such as `Serbia` and `Germany`.
+## World nametag rendering
+
+The flag is inserted after the actual Minecraft username while preserving server prefixes, ranks, colors and suffixes when possible.
+
+Example:
+
+```
+[MVP+] GrimGruff [Serbia flag]
+```
+
+The flag component forces white text tint so team/rank colors do not recolor the bitmap.
 
 ## Sources of country data
 
-Countries checks several sources, in this order:
+Countries checks:
 
-1. `config/countries.json` on your computer.
-2. The repository's public `players.json`.
-3. Countries learned earlier from the optional same-mod handshake and saved in `config/countries-cache.json`.
+1. `config/countries.json`
+2. GitHub `players.json`
+3. learned UUID mappings in `config/countries-cache.json`
+4. the optional same-mod handshake
 
-This means a player does **not** need to install Countries for their flag to appear on Hypixel or another server if their username or UUID is already in one of your directories.
+Players do not need Countries installed if their username or UUID is already known by your directory.
 
-Minecraft clients are not given other players' IP addresses, so completely unknown strangers cannot be geolocated automatically from the normal multiplayer connection.
-
-## Live updates
-
-- Local `config/countries.json` is checked about every 5 seconds.
-- GitHub `players.json` is refreshed about every 60 seconds.
-- `/country` updates the local database immediately.
-- UUID entries continue to work after a player changes their Minecraft name.
-
-## Learned cache
-
-If another Countries user reports their own country through the same-mod handshake, the mapping is saved to `config/countries-cache.json`.
-
-After that, the flag can still appear in later sessions even when that player no longer has Countries installed.
-
-## Flags
-
-The mod uses bitmap country flags embedded into the built JAR. No menu or settings screen is required.
+Unknown players on a third-party server cannot be geolocated from the ordinary Minecraft connection because the client is not sent their IP address.
