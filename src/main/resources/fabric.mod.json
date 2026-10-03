@@ -28,5 +28,6 @@
     "client": [
       "com.fixpot47.countries.CountriesClient"
     ]
-  }
+  },
+  "icon": "assets/countries/icon.png"
 }
