@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "countries",
+  "version": "${version}",
+  "name": "Countries",
+  "description": "Shows country flags in the TAB list for players using the same mod.",
+  "authors": [
+    "fixpot47"
+  ],
+  "contact": {
+    "sources": "https://github.com/fixpot47/countries"
+  },
+  "license": "All-Rights-Reserved",
+  "environment": "client",
+  "mixins": [
+    {
+      "config": "countries.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "minecraft": "~26.3",
+    "java": ">=25"
+  }
+}
