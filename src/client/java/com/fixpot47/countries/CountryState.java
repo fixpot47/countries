@@ -23,6 +23,7 @@ public final class CountryState {
         String normalized = countryCode.toLowerCase(Locale.ROOT);
         if (CountryGlyphs.supports(normalized)) {
             COUNTRIES.put(uuid, normalized);
+            CountryDirectory.rememberUuid(uuid, normalized);
         }
     }
 
