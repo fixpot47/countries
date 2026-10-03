@@ -6,7 +6,7 @@
     "ClientPacketListenerMixin",
     "ChatComponentMixin",
     "MinecraftMixin",
-    "PlayerTabOverlayMixin"
+    "AvatarRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1
