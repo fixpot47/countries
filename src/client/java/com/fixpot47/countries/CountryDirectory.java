@@ -103,12 +103,68 @@ public final class CountryDirectory {
         return CountryState.get(uuid);
     }
 
+    public static String assign(String playerName, UUID uuid, String countryInput) {
+        if (playerName == null || playerName.isBlank()) {
+            return null;
+        }
+
+        String countryCode = CountryNames.resolve(countryInput);
+        if (countryCode == null || !CountryGlyphs.supports(countryCode)) {
+            return null;
+        }
+
+        String canonical = CountryNames.canonicalName(countryCode);
+
+        try {
+            Files.createDirectories(LOCAL_FILE.getParent());
+
+            JsonObject object;
+            if (Files.exists(LOCAL_FILE)) {
+                try {
+                    JsonElement current = GSON.fromJson(
+                            Files.readString(LOCAL_FILE, StandardCharsets.UTF_8),
+                            JsonElement.class
+                    );
+                    object = current != null && current.isJsonObject()
+                            ? current.getAsJsonObject()
+                            : new JsonObject();
+                } catch (Exception ignored) {
+                    object = new JsonObject();
+                }
+            } else {
+                object = new JsonObject();
+            }
+
+            object.addProperty(playerName, canonical);
+            if (uuid != null) {
+                object.addProperty(uuid.toString(), canonical);
+            }
+
+            Files.writeString(
+                    LOCAL_FILE,
+                    GSON.toJson(object) + "\n",
+                    StandardCharsets.UTF_8
+            );
+
+            loadLocal(true);
+
+            if (uuid != null) {
+                learnedUuids.put(uuid, countryCode);
+                saveCache();
+            }
+
+            return countryCode;
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
     public static void rememberUuid(UUID uuid, String countryCode) {
         if (uuid == null) {
             return;
         }
 
-        String normalized = normalizeCountry(countryCode);
+        String normalized = CountryNames.resolve(countryCode);
         if (normalized == null) {
             return;
         }
@@ -140,7 +196,7 @@ public final class CountryDirectory {
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(REMOTE_DIRECTORY)
                         .timeout(Duration.ofSeconds(8))
-                        .header("User-Agent", "Countries-Minecraft-Mod/0.2")
+                        .header("User-Agent", "Countries-Minecraft-Mod/0.3")
                         .header("Cache-Control", "no-cache")
                         .GET()
                         .build();
@@ -196,8 +252,8 @@ public final class CountryDirectory {
                     continue;
                 }
 
-                String country = normalizeCountry(entry.getValue().getAsString());
-                if (country == null) {
+                String country = CountryNames.resolve(entry.getValue().getAsString());
+                if (country == null || !CountryGlyphs.supports(country)) {
                     continue;
                 }
 
@@ -215,22 +271,6 @@ public final class CountryDirectory {
         } catch (Exception ignored) {
             return Directory.EMPTY;
         }
-    }
-
-    private static String normalizeCountry(String raw) {
-        if (raw == null) {
-            return null;
-        }
-
-        String code = raw.trim().toLowerCase(Locale.ROOT);
-        if (code.length() != 2
-                || !Character.isLetter(code.charAt(0))
-                || !Character.isLetter(code.charAt(1))
-                || !CountryGlyphs.supports(code)) {
-            return null;
-        }
-
-        return code;
     }
 
     private static void loadCache() {
@@ -256,7 +296,7 @@ public final class CountryDirectory {
                     .sorted(Map.Entry.comparingByKey())
                     .forEach(entry -> object.addProperty(
                             entry.getKey().toString(),
-                            entry.getValue().toUpperCase(Locale.ROOT)
+                            CountryNames.canonicalName(entry.getValue())
                     ));
 
             Files.writeString(
