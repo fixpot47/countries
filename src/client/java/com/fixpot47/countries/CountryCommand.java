@@ -66,9 +66,8 @@ public final class CountryCommand {
 
     private static void feedback(Minecraft minecraft, String text) {
         if (minecraft.player != null) {
-            minecraft.player.displayClientMessage(
-                    Component.literal("[Countries] " + text),
-                    false
+            minecraft.player.sendSystemMessage(
+                    Component.literal("[Countries] " + text)
             );
         }
     }
