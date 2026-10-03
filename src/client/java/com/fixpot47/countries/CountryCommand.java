@@ -1,14 +1,19 @@
 package com.fixpot47.countries;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
 
+import java.util.Locale;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public final class CountryCommand {
     private CountryCommand() {
@@ -19,7 +24,9 @@ public final class CountryCommand {
             dispatcher.register(
                     ClientCommands.literal("country")
                             .then(ClientCommands.argument("player", StringArgumentType.word())
+                                    .suggests(CountryCommand::suggestPlayers)
                                     .then(ClientCommands.argument("country", StringArgumentType.greedyString())
+                                            .suggests(CountryCommand::suggestCountries)
                                             .executes(context -> {
                                                 String playerName = StringArgumentType.getString(context, "player");
                                                 String countryInput = StringArgumentType.getString(context, "country");
@@ -31,6 +38,36 @@ public final class CountryCommand {
                             })
             );
         });
+    }
+
+    private static CompletableFuture<Suggestions> suggestPlayers(
+            com.mojang.brigadier.context.CommandContext<FabricClientCommandSource> context,
+            SuggestionsBuilder builder
+    ) {
+        String remaining = builder.getRemainingLowerCase();
+
+        for (String player : context.getSource().getPlayerNames()) {
+            if (player.toLowerCase(Locale.ROOT).startsWith(remaining)) {
+                builder.suggest(player);
+            }
+        }
+
+        return builder.buildFuture();
+    }
+
+    private static CompletableFuture<Suggestions> suggestCountries(
+            com.mojang.brigadier.context.CommandContext<FabricClientCommandSource> context,
+            SuggestionsBuilder builder
+    ) {
+        String remaining = builder.getRemainingLowerCase();
+
+        for (String country : CountryNames.suggestions()) {
+            if (country.toLowerCase(Locale.ROOT).startsWith(remaining)) {
+                builder.suggest(country);
+            }
+        }
+
+        return builder.buildFuture();
     }
 
     private static int assign(String playerName, String countryInput) {
