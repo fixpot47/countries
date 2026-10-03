@@ -60,6 +60,30 @@ tasks.register("prepareCountryFlags") {
             }
             includeEmptyDirs = false
         }
+
+        def fontFile = new File(outputDir, "assets/minecraft/font/default.json")
+        def fontJson = new groovy.json.JsonSlurper().parse(fontFile)
+
+        [
+                xab: "\uE100",
+                xnc: "\uE101",
+                xsl: "\uE102",
+                xso: "\uE103",
+                xtrn: "\uE104"
+        ].each { code, glyph ->
+            fontJson.providers.add([
+                    file: "flagprefix/${code}.png",
+                    ascent: 8,
+                    height: 9,
+                    width: 12,
+                    chars: [glyph],
+                    type: "bitmap"
+            ])
+        }
+
+        fontFile.text = groovy.json.JsonOutput.prettyPrint(
+                groovy.json.JsonOutput.toJson(fontJson)
+        )
     }
 }
 
