@@ -46,9 +46,15 @@ public final class CountryCommand {
     ) {
         String remaining = builder.getRemainingLowerCase();
 
-        for (String player : context.getSource().getPlayerNames()) {
-            if (player.toLowerCase(Locale.ROOT).startsWith(remaining)) {
-                builder.suggest(player);
+        ClientPacketListener connection = Minecraft.getInstance().getConnection();
+
+        if (connection != null) {
+            for (PlayerInfo playerInfo : connection.getListedOnlinePlayers()) {
+                String player = playerInfo.getProfile().name();
+
+                if (player.toLowerCase(Locale.ROOT).startsWith(remaining)) {
+                    builder.suggest(player);
+                }
             }
         }
 
