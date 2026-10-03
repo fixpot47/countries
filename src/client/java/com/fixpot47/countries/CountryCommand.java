@@ -1,5 +1,8 @@
 package com.fixpot47.countries;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
@@ -11,60 +14,59 @@ public final class CountryCommand {
     private CountryCommand() {
     }
 
-    public static boolean handle(ClientPacketListener connection, String command) {
-        if (command == null) {
-            return false;
-        }
+    public static void register() {
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, buildContext) -> {
+            dispatcher.register(
+                    ClientCommands.literal("country")
+                            .then(ClientCommands.argument("player", StringArgumentType.word())
+                                    .then(ClientCommands.argument("country", StringArgumentType.greedyString())
+                                            .executes(context -> {
+                                                String playerName = StringArgumentType.getString(context, "player");
+                                                String countryInput = StringArgumentType.getString(context, "country");
+                                                return assign(playerName, countryInput);
+                                            })))
+                            .executes(context -> {
+                                feedback("Usage: /country <player> <country>");
+                                return 0;
+                            })
+            );
+        });
+    }
 
-        String trimmed = command.trim();
-        if (!trimmed.equalsIgnoreCase("country")
-                && !trimmed.toLowerCase(java.util.Locale.ROOT).startsWith("country ")) {
-            return false;
-        }
-
-        String args = trimmed.length() <= 7 ? "" : trimmed.substring(7).trim();
+    private static int assign(String playerName, String countryInput) {
         Minecraft minecraft = Minecraft.getInstance();
+        ClientPacketListener connection = minecraft.getConnection();
 
-        if (args.isEmpty()) {
-            feedback(minecraft, "Usage: /country <player> <country>");
-            return true;
-        }
-
-        int space = args.indexOf(' ');
-        if (space <= 0 || space >= args.length() - 1) {
-            feedback(minecraft, "Usage: /country <player> <country>");
-            return true;
-        }
-
-        String playerName = args.substring(0, space).trim();
-        String countryInput = args.substring(space + 1).trim();
         String countryCode = CountryNames.resolve(countryInput);
-
         if (countryCode == null) {
-            feedback(minecraft, "Unknown country: " + countryInput);
-            return true;
+            feedback("Unknown country: " + countryInput);
+            return 0;
         }
 
-        PlayerInfo info = connection.getPlayerInfoIgnoreCase(playerName);
+        PlayerInfo info = connection == null
+                ? null
+                : connection.getPlayerInfoIgnoreCase(playerName);
+
         UUID uuid = info == null ? null : info.getProfile().id();
         String realName = info == null ? playerName : info.getProfile().name();
 
         String saved = CountryDirectory.assign(realName, uuid, countryInput);
         if (saved == null) {
-            feedback(minecraft, "Could not save country for " + realName);
-            return true;
+            feedback("Could not save country for " + realName);
+            return 0;
         }
 
         String status = uuid == null ? "saved by name" : "saved by name + UUID";
         feedback(
-                minecraft,
                 realName + " -> " + CountryNames.canonicalName(saved) + " (" + status + ")"
         );
 
-        return true;
+        return 1;
     }
 
-    private static void feedback(Minecraft minecraft, String text) {
+    private static void feedback(String text) {
+        Minecraft minecraft = Minecraft.getInstance();
+
         if (minecraft.player != null) {
             minecraft.player.sendSystemMessage(
                     Component.literal("[Countries] " + text)
